@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toxic Comment Detector</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <span class="shield-icon">🛡️</span>
+        <h1>ToxGuard</h1>
+      </div>
+      <div class="server-status" id="serverStatus">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Checking...</span>
+      </div>
+    </div>
+
+    <!-- Main Action -->
+    <div class="main-section">
+      <p class="description">Scan this page for toxic comments and highlight them in real-time.</p>
+
+      <button class="scan-btn" id="scanBtn" disabled>
+        <span class="btn-icon">🔍</span>
+        <span class="btn-text">Scan Page</span>
+      </button>
+
+      <button class="clear-btn" id="clearBtn" style="display: none;">
+        <span class="btn-icon">✕</span>
+        <span class="btn-text">Clear Highlights</span>
+      </button>
+    </div>
+
+    <!-- Settings -->
+    <div class="settings-section">
+      <label class="threshold-label">
+        Toxicity Threshold: <span id="thresholdValue">50%</span>
+      </label>
+      <input type="range" class="threshold-slider" id="thresholdSlider" min="10" max="90" value="50" step="5">
+    </div>
+
+    <!-- Results -->
+    <div class="results-section" id="resultsSection" style="display: none;">
+      <div class="results-header">
+        <h2>Scan Results</h2>
+      </div>
+      <div class="stats-grid four-col">
+        <div class="stat-card">
+          <div class="stat-number" id="totalScanned">0</div>
+          <div class="stat-label">Scanned</div>
+        </div>
+        <div class="stat-card toxic">
+          <div class="stat-number" id="toxicFound">0</div>
+          <div class="stat-label">Toxic</div>
+        </div>
+        <div class="stat-card medium">
+          <div class="stat-number" id="mediumFound">0</div>
+          <div class="stat-label">Medium</div>
+        </div>
+        <div class="stat-card safe">
+          <div class="stat-number" id="safeFound">0</div>
+          <div class="stat-label">Safe</div>
+        </div>
+      </div>
+      <div class="category-breakdown" id="categoryBreakdown"></div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-section" id="loadingSection" style="display: none;">
+      <div class="spinner"></div>
+      <p class="loading-text">Analyzing comments...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-section" id="errorSection" style="display: none;">
+      <p class="error-text" id="errorText"></p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>Powered by TensorFlow</span>
+      <span class="version">v1.0</span>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>

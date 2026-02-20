@@ -1,9 +1,15 @@
 import pickle
+import os
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+
+# Resolve paths to root-level models/ directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "tox_model.h5")
+TOKENIZER_PATH = os.path.join(BASE_DIR, "models", "tokenizer.pickle")
 
 # Page configuration
 st.set_page_config(
@@ -43,8 +49,8 @@ st.markdown("""
 # Load model and tokenizer
 @st.cache_resource
 def load_model_and_tokenizer():
-    model = load_model("tox_model.h5")
-    with open('tokenizer.pickle', 'rb') as handle:
+    model = load_model(MODEL_PATH)
+    with open(TOKENIZER_PATH, 'rb') as handle:
         tokenizer = pickle.load(handle)
     return model, tokenizer
 
