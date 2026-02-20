@@ -14,8 +14,13 @@
   const SAFE_CLASS = "toxguard-safe";
   const BADGE_ID = "toxguard-badge";
   const TOOLTIP_ID = "toxguard-floating-tooltip";
+  const MODAL_ID = "toxguard-stats-modal";
+  const OVERLAY_ID = "toxguard-overlay";
   const MIN_TEXT_LENGTH = 10;
   const MAX_TEXT_LENGTH = 1000;
+
+  // Store last scan results for the modal
+  let lastScanData = null;
 
   // ── Floating Tooltip ────────────────────────────────────────────────
   // Single tooltip element appended to <body> to avoid overflow:hidden clipping
@@ -184,6 +189,215 @@
       #${BADGE_ID} .badge-icon {
         font-size: 16px;
       }
+
+      /* ── Modal Overlay ── */
+      #${OVERLAY_ID} {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        z-index: 2147483640 !important;
+        opacity: 0;
+        transition: opacity 0.3s ease !important;
+      }
+      #${OVERLAY_ID}.tg-visible { opacity: 1; }
+
+      /* ── Stats Modal ── */
+      #${MODAL_ID} {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) scale(0.9) !important;
+        width: 480px !important;
+        max-height: 85vh !important;
+        background: #13131a !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 16px !important;
+        z-index: 2147483641 !important;
+        font-family: 'Inter', -apple-system, sans-serif !important;
+        color: #e2e8f0 !important;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+      }
+      #${MODAL_ID}.tg-visible {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) !important;
+      }
+
+      .tg-modal-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 20px 24px 16px !important;
+        border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+      }
+      .tg-modal-title {
+        font-size: 16px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+      .tg-modal-close {
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: rgba(255,255,255,0.06) !important;
+        color: #94a3b8 !important;
+        font-size: 16px !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: background 0.2s !important;
+      }
+      .tg-modal-close:hover { background: rgba(255,255,255,0.12) !important; }
+
+      .tg-modal-body {
+        padding: 20px 24px !important;
+        overflow-y: auto !important;
+        flex: 1 !important;
+      }
+
+      /* ── Stat Cards Row ── */
+      .tg-stat-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+      }
+      .tg-stat-card {
+        background: rgba(255,255,255,0.04) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: 12px !important;
+        padding: 14px !important;
+        text-align: center !important;
+      }
+      .tg-stat-number {
+        font-size: 28px !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+      }
+      .tg-stat-label {
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #94a3b8 !important;
+        margin-top: 6px !important;
+      }
+      .tg-stat-number.toxic { color: #f87171 !important; }
+      .tg-stat-number.medium { color: #fbbf24 !important; }
+      .tg-stat-number.safe { color: #34d399 !important; }
+
+      /* ── Category Bars ── */
+      .tg-section-title {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #94a3b8 !important;
+        margin-bottom: 12px !important;
+      }
+      .tg-category-list { margin-bottom: 20px !important; }
+      .tg-category-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+      }
+      .tg-cat-name {
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        width: 100px !important;
+        flex-shrink: 0 !important;
+        text-transform: capitalize !important;
+        color: #cbd5e1 !important;
+      }
+      .tg-cat-bar-bg {
+        flex: 1 !important;
+        height: 8px !important;
+        background: rgba(255,255,255,0.06) !important;
+        border-radius: 4px !important;
+        overflow: hidden !important;
+      }
+      .tg-cat-bar-fill {
+        height: 100% !important;
+        border-radius: 4px !important;
+        transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        width: 0% !important;
+      }
+      .tg-cat-count {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        width: 28px !important;
+        text-align: right !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* ── Comment List ── */
+      .tg-comment-list { margin-top: 4px !important; }
+      .tg-comment-item {
+        background: rgba(255,255,255,0.03) !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        border-radius: 10px !important;
+        padding: 12px 14px !important;
+        margin-bottom: 8px !important;
+        cursor: pointer !important;
+        transition: background 0.2s, border-color 0.2s !important;
+      }
+      .tg-comment-item:hover {
+        background: rgba(255,255,255,0.06) !important;
+        border-color: rgba(255,255,255,0.1) !important;
+      }
+      .tg-comment-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-bottom: 6px !important;
+      }
+      .tg-comment-severity {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+      }
+      .tg-comment-severity.toxic {
+        background: rgba(248, 113, 113, 0.15) !important;
+        color: #f87171 !important;
+      }
+      .tg-comment-severity.medium {
+        background: rgba(251, 191, 36, 0.15) !important;
+        color: #fbbf24 !important;
+      }
+      .tg-comment-category {
+        font-size: 11px !important;
+        color: #64748b !important;
+      }
+      .tg-comment-text {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+        color: #94a3b8 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+      }
+
+      /* ── Modal scrollbar ── */
+      .tg-modal-body::-webkit-scrollbar { width: 4px !important; }
+      .tg-modal-body::-webkit-scrollbar-track { background: transparent !important; }
+      .tg-modal-body::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 2px !important;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -324,12 +538,161 @@
     badge = document.createElement("div");
     badge.id = BADGE_ID;
     badge.innerHTML = `<span class="badge-icon">🛡️</span> ${count} toxic comment${count !== 1 ? "s" : ""} found`;
-    badge.addEventListener("click", () => {
-      // Scroll to the first toxic comment
-      const first = document.querySelector(`.${TOXIC_CLASS}`);
-      if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
+    badge.addEventListener("click", () => showStatsModal());
     document.body.appendChild(badge);
+  }
+
+  // ── Stats Modal ────────────────────────────────────────────────────
+  function showStatsModal() {
+    if (!lastScanData) return;
+    // Remove existing modal
+    hideStatsModal();
+
+    const { totalComments, toxicComments, mediumComments = 0, results } = lastScanData;
+    const safeCount = totalComments - toxicComments - mediumComments;
+
+    // Build category breakdown
+    const categories = {};
+    results.forEach(r => {
+      const severity = r.severity || (r.is_toxic ? "toxic" : "safe");
+      if (severity === "toxic" || severity === "medium") {
+        Object.entries(r.scores).forEach(([cat, score]) => {
+          if (score >= 0.3) {
+            categories[cat] = (categories[cat] || 0) + 1;
+          }
+        });
+      }
+    });
+    const sortedCats = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+    const maxCatCount = sortedCats.length > 0 ? sortedCats[0][1] : 1;
+
+    const catColors = {
+      toxic: "#f87171", severe_toxic: "#ef4444", obscene: "#fb923c",
+      threat: "#f43f5e", insult: "#a78bfa", identity_hate: "#f472b6"
+    };
+
+    // Build flagged comments list (toxic + medium only)
+    const flagged = results
+      .map((r, i) => ({ ...r, index: i }))
+      .filter(r => {
+        const sev = r.severity || (r.is_toxic ? "toxic" : "safe");
+        return sev === "toxic" || sev === "medium";
+      });
+
+    // Overlay
+    const overlay = document.createElement("div");
+    overlay.id = OVERLAY_ID;
+    overlay.addEventListener("click", hideStatsModal);
+    document.body.appendChild(overlay);
+
+    // Modal
+    const modal = document.createElement("div");
+    modal.id = MODAL_ID;
+    modal.innerHTML = `
+      <div class="tg-modal-header">
+        <div class="tg-modal-title">🛡️ ToxGuard Report</div>
+        <button class="tg-modal-close" id="tg-close-btn">✕</button>
+      </div>
+      <div class="tg-modal-body">
+        <div class="tg-stat-row">
+          <div class="tg-stat-card">
+            <div class="tg-stat-number toxic">${toxicComments}</div>
+            <div class="tg-stat-label">Toxic</div>
+          </div>
+          <div class="tg-stat-card">
+            <div class="tg-stat-number medium">${mediumComments}</div>
+            <div class="tg-stat-label">Medium</div>
+          </div>
+          <div class="tg-stat-card">
+            <div class="tg-stat-number safe">${safeCount}</div>
+            <div class="tg-stat-label">Safe</div>
+          </div>
+        </div>
+
+        ${sortedCats.length > 0 ? `
+          <div class="tg-section-title">Category Breakdown</div>
+          <div class="tg-category-list">
+            ${sortedCats.map(([cat, count]) => `
+              <div class="tg-category-item">
+                <span class="tg-cat-name">${cat.replace(/_/g, " ")}</span>
+                <div class="tg-cat-bar-bg">
+                  <div class="tg-cat-bar-fill" data-width="${(count / maxCatCount) * 100}" style="background: ${catColors[cat] || '#f87171'};"></div>
+                </div>
+                <span class="tg-cat-count" style="color: ${catColors[cat] || '#f87171'};">${count}</span>
+              </div>
+            `).join("")}
+          </div>
+        ` : ""}
+
+        ${flagged.length > 0 ? `
+          <div class="tg-section-title">Flagged Comments (${flagged.length})</div>
+          <div class="tg-comment-list">
+            ${flagged.map(r => {
+      const sev = r.severity || (r.is_toxic ? "toxic" : "safe");
+      const topCat = Object.entries(r.scores).reduce(
+        (max, [c, s]) => (s > max[1] ? [c, s] : max), ["", 0]
+      );
+      return `
+                <div class="tg-comment-item" data-index="${r.index}">
+                  <div class="tg-comment-header">
+                    <span class="tg-comment-severity ${sev}">${sev}</span>
+                    <span class="tg-comment-category">${topCat[0].replace(/_/g, " ")} · ${(topCat[1] * 100).toFixed(0)}%</span>
+                  </div>
+                  <div class="tg-comment-text">${escapeHtml(r.text)}</div>
+                </div>
+              `;
+    }).join("")}
+          </div>
+        ` : ""}
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      overlay.classList.add("tg-visible");
+      modal.classList.add("tg-visible");
+      // Animate category bars
+      modal.querySelectorAll(".tg-cat-bar-fill").forEach(bar => {
+        bar.style.width = bar.dataset.width + "%";
+      });
+    });
+
+    // Close button
+    modal.querySelector("#tg-close-btn").addEventListener("click", hideStatsModal);
+    // Click comment to scroll
+    modal.querySelectorAll(".tg-comment-item").forEach(item => {
+      item.addEventListener("click", () => {
+        hideStatsModal();
+        const allHighlighted = document.querySelectorAll(
+          `.${TOXIC_CLASS}, .${MEDIUM_CLASS}`
+        );
+        const idx = parseInt(item.dataset.index);
+        // Find the element matching this result index
+        const target = allHighlighted[idx] || allHighlighted[0];
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+    // ESC to close
+    document.addEventListener("keydown", handleEsc);
+  }
+
+  function handleEsc(e) {
+    if (e.key === "Escape") hideStatsModal();
+  }
+
+  function hideStatsModal() {
+    document.removeEventListener("keydown", handleEsc);
+    const overlay = document.getElementById(OVERLAY_ID);
+    const modal = document.getElementById(MODAL_ID);
+    if (overlay) overlay.remove();
+    if (modal) modal.remove();
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text || "";
+    return div.innerHTML;
   }
 
   // ── Clear Highlights ────────────────────────────────────────────────
@@ -353,6 +716,9 @@
     const tip = document.getElementById(TOOLTIP_ID);
     if (tip) tip.remove();
     floatingTooltip = null;
+    // Remove modal
+    hideStatsModal();
+    lastScanData = null;
   }
 
   // ── Main Scan Flow ──────────────────────────────────────────────────
@@ -404,14 +770,17 @@
 
       showBadge(toxicCount + mediumCount);
 
+      // Store data for the stats modal
+      lastScanData = {
+        totalComments: elements.length,
+        toxicComments: toxicCount,
+        mediumComments: mediumCount,
+        results: results
+      };
+
       return {
         success: true,
-        data: {
-          totalComments: elements.length,
-          toxicComments: toxicCount,
-          mediumComments: mediumCount,
-          results: results
-        }
+        data: lastScanData
       };
     } catch (err) {
       return { success: false, error: err.message };
