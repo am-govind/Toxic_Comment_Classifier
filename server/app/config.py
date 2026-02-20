@@ -4,8 +4,9 @@ Uses pydantic-settings for type-safe configuration with .env file support.
 """
 
 from functools import lru_cache
-from pydantic_settings import BaseSettings
 from pathlib import Path
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -20,12 +21,17 @@ class Settings(BaseSettings):
 
     # Security
     API_KEY: str = "toxguard-dev-key-change-me"
-    CORS_ORIGINS: list[str] = ["*"]
+    CORS_ORIGINS: list[str] = ["chrome-extension://*"]
+    ALLOWED_HOSTS: list[str] = ["*"]
     RATE_LIMIT: str = "30/minute"
 
     # Model — points to root-level models/ directory
-    MODEL_PATH: str = str(Path(__file__).parent.parent.parent / "models" / "tox_model.h5")
-    TOKENIZER_PATH: str = str(Path(__file__).parent.parent.parent / "models" / "tokenizer.pickle")
+    MODEL_PATH: str = str(
+        Path(__file__).parent.parent.parent / "models" / "tox_model.h5"
+    )
+    TOKENIZER_PATH: str = str(
+        Path(__file__).parent.parent.parent / "models" / "tokenizer.pickle"
+    )
     MAX_SEQUENCE_LENGTH: int = 100
 
     # Input limits
@@ -34,7 +40,12 @@ class Settings(BaseSettings):
 
     # Classification
     CATEGORIES: list[str] = [
-        "toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"
+        "toxic",
+        "severe_toxic",
+        "obscene",
+        "threat",
+        "insult",
+        "identity_hate",
     ]
 
     model_config = {

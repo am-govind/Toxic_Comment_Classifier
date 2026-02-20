@@ -5,9 +5,10 @@ This conftest ensures the model is loaded once before any tests run.
 
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
+
 from app.classifier import classifier
 from app.config import get_settings
+from app.main import app
 
 
 @pytest.fixture(scope="session", autouse=True)

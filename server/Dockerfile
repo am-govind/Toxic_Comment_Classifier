@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -9,8 +9,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 
-# Copy model files from root-level models/ directory
-COPY ../models/ ./models/
+# Copy model files (place models/ alongside Dockerfile at build time,
+# or mount as a volume at runtime)
+COPY models/ ./models/
 
 # Expose port
 EXPOSE 4000

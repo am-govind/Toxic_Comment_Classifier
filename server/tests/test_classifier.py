@@ -4,6 +4,7 @@ Run with: cd server && python -m pytest tests/ -v
 """
 
 import pytest
+
 from app.classifier import ToxicClassifier, classifier
 
 
@@ -50,7 +51,7 @@ class TestClassifierPrediction:
         """If flagged_categories is 0, severity must be safe."""
         results = classifier.predict(
             ["The weather is lovely today!"],
-            threshold=0.99  # Very high threshold → nothing flagged
+            threshold=0.99,  # Very high threshold → nothing flagged
         )
         assert results[0]["flagged_categories"] == 0
         assert results[0]["severity"] == "safe"
@@ -59,8 +60,7 @@ class TestClassifierPrediction:
     def test_severity_consistency(self):
         """Verify severity matches flagged count rules."""
         results = classifier.predict(
-            ["You are an absolute fool and idiot, go away!"],
-            threshold=0.1
+            ["You are an absolute fool and idiot, go away!"], threshold=0.1
         )
         result = results[0]
         flagged = result["flagged_categories"]

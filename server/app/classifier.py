@@ -5,8 +5,9 @@ Separates ML concerns from the web framework.
 
 import io
 import pickle
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 from tf_keras.models import load_model
 from tf_keras.preprocessing.sequence import pad_sequences
 
@@ -15,9 +16,10 @@ from .config import get_settings
 
 class KerasCompatUnpickler(pickle.Unpickler):
     """Remap 'keras.src.*' references to 'tf_keras.src.*' for old pickles."""
+
     def find_class(self, module: str, name: str):
         if module.startswith("keras.src"):
-            module = "tf_keras.src" + module[len("keras.src"):]
+            module = "tf_keras.src" + module[len("keras.src") :]
         return super().find_class(module, name)
 
 
@@ -52,7 +54,7 @@ class ToxicClassifier:
         settings = self.settings
 
         # Truncate individual comments to max length
-        truncated = [c[:settings.MAX_COMMENT_LENGTH] for c in comments]
+        truncated = [c[: settings.MAX_COMMENT_LENGTH] for c in comments]
 
         # Tokenize and pad
         tokenized = self.tokenizer.texts_to_sequences(truncated)
@@ -83,13 +85,15 @@ class ToxicClassifier:
                 severity = "toxic"
                 is_toxic = True
 
-            results.append({
-                "text": text[:200],
-                "scores": scores,
-                "is_toxic": is_toxic,
-                "severity": severity,
-                "flagged_categories": flagged_count,
-            })
+            results.append(
+                {
+                    "text": text[:200],
+                    "scores": scores,
+                    "is_toxic": is_toxic,
+                    "severity": severity,
+                    "flagged_categories": flagged_count,
+                }
+            )
 
         return results
 

@@ -4,6 +4,7 @@ Run with: cd server && python -m pytest tests/ -v
 """
 
 import pytest
+
 from app.config import Settings, get_settings
 
 
