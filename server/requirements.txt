@@ -1,0 +1,10 @@
+tensorflow==2.16.2
+tf-keras
+numpy
+fastapi
+uvicorn[standard]
+pydantic-settings
+python-dotenv
+slowapi
+httpx
+pytest
