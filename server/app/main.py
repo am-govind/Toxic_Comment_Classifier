@@ -4,16 +4,16 @@ Serves the Keras model via REST endpoints for the Chrome extension.
 """
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, Request
+
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from .config import get_settings
 from .classifier import classifier
-from .middleware import limiter, verify_api_key
-
+from .config import get_settings
+from .middleware import SecurityHeadersMiddleware, limiter, verify_api_key
 
 settings = get_settings()
 
@@ -34,6 +34,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Security headers
+app.add_middleware(SecurityHeadersMiddleware)
+
 # Rate limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -42,8 +45,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-API-Key"],
 )
 
 
@@ -55,6 +58,13 @@ class PredictRequest(BaseModel):
         max_length=settings.MAX_COMMENTS_PER_REQUEST,
     )
     threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+
+    @field_validator("comments")
+    @classmethod
+    def truncate_long_comments(cls, v):
+        """Truncate each comment to MAX_COMMENT_LENGTH at the API boundary."""
+        max_len = get_settings().MAX_COMMENT_LENGTH
+        return [c[:max_len] for c in v]
 
 
 class CommentResult(BaseModel):
@@ -91,6 +101,7 @@ async def predict(
 # ── Run ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
+
     print(f"🚀 Starting {settings.APP_NAME} on http://{settings.HOST}:{settings.PORT}")
     uvicorn.run(
         "app.main:app",
