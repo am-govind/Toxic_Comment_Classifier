@@ -1,0 +1,41 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual Environments ──
+tcc/
+venv/
+.venv/
+env/
+
+# ── Environment ──
+.env
+!server/.env.example
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── Model files (large, use Git LFS or download separately) ──
+# Uncomment these if you don't want to track models in git:
+# *.h5
+# *.pickle
+
+# ── Misc ──
+*.log
+.coverage
+htmlcov/
+.pytest_cache/
