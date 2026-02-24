@@ -17,9 +17,12 @@
         <span class="shield-icon">🛡️</span>
         <h1>ToxGuard</h1>
       </div>
-      <div class="server-status" id="serverStatus">
-        <span class="status-dot" id="statusDot"></span>
-        <span class="status-text" id="statusText">Checking...</span>
+      <div class="header-right">
+        <button class="theme-toggle" id="themeToggle" title="Toggle theme">🌙</button>
+        <div class="server-status" id="serverStatus">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-text" id="statusText">Checking...</span>
+        </div>
       </div>
     </div>
 
@@ -70,6 +73,10 @@
         </div>
       </div>
       <div class="category-breakdown" id="categoryBreakdown"></div>
+      <button class="export-btn" id="exportBtn">
+        <span class="btn-icon">📥</span>
+        <span class="btn-text">Export CSV</span>
+      </button>
     </div>
 
     <!-- Loading State -->
@@ -90,6 +97,7 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 

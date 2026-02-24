@@ -3,7 +3,7 @@
  * and orchestrates the scan flow.
  */
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = CONFIG.API_BASE;
 
 // ── DOM Elements ──────────────────────────────────────────────────────
 const scanBtn = document.getElementById("scanBtn");
@@ -21,6 +21,34 @@ const toxicFound = document.getElementById("toxicFound");
 const mediumFound = document.getElementById("mediumFound");
 const safeFound = document.getElementById("safeFound");
 const categoryBreakdown = document.getElementById("categoryBreakdown");
+const themeToggle = document.getElementById("themeToggle");
+const exportBtn = document.getElementById("exportBtn");
+
+// Store last scan results for export
+let lastResults = null;
+
+// ── Theme Toggle ──────────────────────────────────────────────────────
+async function loadTheme() {
+    try {
+        const { theme } = await chrome.storage.local.get("theme");
+        const isDark = theme !== "light";
+        applyTheme(isDark ? "dark" : "light");
+    } catch {
+        applyTheme("dark");
+    }
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    themeToggle.textContent = theme === "dark" ? "🌙" : "☀️";
+}
+
+themeToggle.addEventListener("click", async () => {
+    const current = document.documentElement.getAttribute("data-theme") || "dark";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    await chrome.storage.local.set({ theme: next });
+});
 
 // ── Server Health Check ───────────────────────────────────────────────
 async function checkServerHealth() {
@@ -94,6 +122,7 @@ clearBtn.addEventListener("click", async () => {
         await chrome.tabs.sendMessage(tab.id, { action: "clearHighlights" });
         resultsSection.style.display = "none";
         clearBtn.style.display = "none";
+        lastResults = null;
     } catch (err) {
         // Silently fail
     }
@@ -103,6 +132,9 @@ clearBtn.addEventListener("click", async () => {
 function displayResults(data) {
     const { totalComments, toxicComments, mediumComments = 0, results } = data;
     const safeCount = totalComments - toxicComments - mediumComments;
+
+    // Store for export
+    lastResults = results;
 
     totalScanned.textContent = totalComments;
     toxicFound.textContent = toxicComments;
@@ -137,6 +169,37 @@ function displayResults(data) {
     clearBtn.style.display = "flex";
 }
 
+// ── Export CSV ─────────────────────────────────────────────────────────
+exportBtn.addEventListener("click", () => {
+    if (!lastResults || lastResults.length === 0) return;
+
+    const headers = ["text", "severity", "flagged_categories", "toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"];
+    const rows = lastResults.map(r => {
+        const text = `"${(r.text || "").replace(/"/g, '""')}"`;
+        return [
+            text,
+            r.severity || "unknown",
+            r.flagged_categories || 0,
+            r.scores?.toxic || 0,
+            r.scores?.severe_toxic || 0,
+            r.scores?.obscene || 0,
+            r.scores?.threat || 0,
+            r.scores?.insult || 0,
+            r.scores?.identity_hate || 0,
+        ].join(",");
+    });
+
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `toxguard_report_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+});
+
 // ── Show Error ────────────────────────────────────────────────────────
 function showError(message) {
     errorText.textContent = message;
@@ -147,4 +210,5 @@ function showError(message) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────
+loadTheme();
 checkServerHealth();

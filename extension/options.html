@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToxGuard Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="shield-icon">🛡️</span>
+            <h1>ToxGuard Settings</h1>
+        </div>
+
+        <form id="settingsForm">
+            <div class="field">
+                <label for="apiBase">API Server URL</label>
+                <input type="url" id="apiBase" placeholder="https://amgovind-toxguard.hf.space" spellcheck="false">
+                <p class="hint">The URL of your ToxGuard API server.</p>
+            </div>
+
+            <div class="field">
+                <label for="apiKey">API Key</label>
+                <div class="key-input-wrapper">
+                    <input type="password" id="apiKey" placeholder="Enter your API key" spellcheck="false">
+                    <button type="button" class="toggle-visibility" id="toggleKey" title="Show/Hide">👁️</button>
+                </div>
+                <p class="hint">The secret key used to authenticate with the server.</p>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="save-btn">Save Settings</button>
+                <button type="button" class="reset-btn" id="resetBtn">Reset URL</button>
+            </div>
+
+            <div class="status-msg" id="statusMsg"></div>
+        </form>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="options.js"></script>
+</body>
+
+</html>

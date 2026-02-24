@@ -8,7 +8,6 @@
   if (window.__toxGuardInjected) return;
   window.__toxGuardInjected = true;
 
-  const API_BASE = "http://localhost:4000";
   const TOXIC_CLASS = "toxguard-toxic";
   const MEDIUM_CLASS = "toxguard-medium";
   const SAFE_CLASS = "toxguard-safe";
@@ -770,7 +769,6 @@
 
       showBadge(toxicCount + mediumCount);
 
-      // Store data for the stats modal
       lastScanData = {
         totalComments: elements.length,
         toxicComments: toxicCount,
