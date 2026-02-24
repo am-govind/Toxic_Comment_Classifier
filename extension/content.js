@@ -8,7 +8,6 @@
   if (window.__toxGuardInjected) return;
   window.__toxGuardInjected = true;
 
-  const API_BASE = "http://localhost:4000";
   const TOXIC_CLASS = "toxguard-toxic";
   const MEDIUM_CLASS = "toxguard-medium";
   const SAFE_CLASS = "toxguard-safe";
@@ -660,17 +659,20 @@
 
     // Close button
     modal.querySelector("#tg-close-btn").addEventListener("click", hideStatsModal);
-    // Click comment to scroll
+    // Click comment to scroll to it on the page
     modal.querySelectorAll(".tg-comment-item").forEach(item => {
       item.addEventListener("click", () => {
         hideStatsModal();
-        const allHighlighted = document.querySelectorAll(
-          `.${TOXIC_CLASS}, .${MEDIUM_CLASS}`
-        );
         const idx = parseInt(item.dataset.index);
-        // Find the element matching this result index
-        const target = allHighlighted[idx] || allHighlighted[0];
-        if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+        const target = lastScanData && lastScanData.elements ? lastScanData.elements[idx] : null;
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Flash effect to draw attention
+          target.style.transition = "outline-color 0.3s ease";
+          const origOutline = target.style.outlineColor;
+          target.style.outlineColor = "#ffffff";
+          setTimeout(() => { target.style.outlineColor = origOutline; }, 600);
+        }
       });
     });
     // ESC to close
@@ -770,12 +772,13 @@
 
       showBadge(toxicCount + mediumCount);
 
-      // Store data for the stats modal
+      // Store data for the stats modal (including DOM elements for click-to-scroll)
       lastScanData = {
         totalComments: elements.length,
         toxicComments: toxicCount,
         mediumComments: mediumCount,
-        results: results
+        results: results,
+        elements: elements
       };
 
       return {
