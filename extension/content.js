@@ -659,20 +659,17 @@
 
     // Close button
     modal.querySelector("#tg-close-btn").addEventListener("click", hideStatsModal);
-    // Click comment to scroll to it on the page
+    // Click comment to scroll
     modal.querySelectorAll(".tg-comment-item").forEach(item => {
       item.addEventListener("click", () => {
         hideStatsModal();
+        const allHighlighted = document.querySelectorAll(
+          `.${TOXIC_CLASS}, .${MEDIUM_CLASS}`
+        );
         const idx = parseInt(item.dataset.index);
-        const target = lastScanData && lastScanData.elements ? lastScanData.elements[idx] : null;
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Flash effect to draw attention
-          target.style.transition = "outline-color 0.3s ease";
-          const origOutline = target.style.outlineColor;
-          target.style.outlineColor = "#ffffff";
-          setTimeout(() => { target.style.outlineColor = origOutline; }, 600);
-        }
+        // Find the element matching this result index
+        const target = allHighlighted[idx] || allHighlighted[0];
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
       });
     });
     // ESC to close
@@ -772,13 +769,11 @@
 
       showBadge(toxicCount + mediumCount);
 
-      // Store data for the stats modal (including DOM elements for click-to-scroll)
       lastScanData = {
         totalComments: elements.length,
         toxicComments: toxicCount,
         mediumComments: mediumCount,
-        results: results,
-        elements: elements
+        results: results
       };
 
       return {
