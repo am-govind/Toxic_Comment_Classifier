@@ -90,10 +90,10 @@ scanBtn.addEventListener("click", async () => {
         // Get the active tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        // Inject content script
+        // Inject content scripts (dependencies first, then orchestrator)
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            files: ["content.js"]
+            files: ["content-styles.js", "platforms.js", "content.js"]
         });
 
         // Ask content script to scrape comments
@@ -173,11 +173,13 @@ function displayResults(data) {
 exportBtn.addEventListener("click", () => {
     if (!lastResults || lastResults.length === 0) return;
 
-    const headers = ["text", "severity", "flagged_categories", "toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"];
+    const headers = ["text", "author", "severity", "flagged_categories", "toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"];
     const rows = lastResults.map(r => {
         const text = `"${(r.text || "").replace(/"/g, '""')}"`;
+        const author = `"${(r.author || "Unknown").replace(/"/g, '""')}"`;
         return [
             text,
+            author,
             r.severity || "unknown",
             r.flagged_categories || 0,
             r.scores?.toxic || 0,
