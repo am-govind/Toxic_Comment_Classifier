@@ -32,6 +32,7 @@ A **Chrome extension + FastAPI backend** that scans web pages for toxic comments
 | **Cross-Browser** | Works on Chrome, Edge, Brave, Opera, Vivaldi, Arc |
 | **Privacy-First** | Model runs on your server — no data sold to third parties |
 | **Keyboard Shortcut** | `Ctrl+Shift+T` (Mac: `⌘+Shift+T`) opens the popup |
+| **JSDoc Typed** | Full IntelliSense — hover any function for docs + type info |
 
 ---
 
@@ -70,6 +71,7 @@ Toxic_Comment_Classifier/
 │   ├── config.js                 # API base URL, key, defaults
 │   ├── popup.html / .js / .css   # Extension popup UI
 │   ├── options.html / .js / .css # Settings page
+│   ├── jsconfig.json             # VS Code IntelliSense & type checking
 │   └── icons/                    # Extension icons (16/48/128px)
 │
 ├── server/                       # FastAPI Backend

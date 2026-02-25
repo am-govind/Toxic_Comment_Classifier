@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "target": "ES2022",
+        "module": "none",
+        "lib": [
+            "ES2022",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "strict": false,
+        "noEmit": true,
+        "allowJs": true,
+        "baseUrl": "."
+    },
+    "include": [
+        "*.js"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
