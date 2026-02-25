@@ -285,8 +285,3 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ToxGuard respects your privacy. Comment text is processed in-memory and immediately discarded. No personal data is collected or stored. See the full [Privacy Policy](docs/privacy-policy.md).
 
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/am-govind">Govind Mishra</a>
-</p>
