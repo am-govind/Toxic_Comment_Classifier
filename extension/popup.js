@@ -1,33 +1,65 @@
 /**
- * Popup Script — handles UI interactions, server health checks,
- * and orchestrates the scan flow.
+ * ToxGuard Popup Script
+ * Manages the extension popup UI: server health checks, scan orchestration,
+ * results display, CSV export, and theme toggling.
+ *
+ * @requires config.js — provides {@link CONFIG} with API_BASE
  */
 
+/** @type {string} */
 const API_BASE = CONFIG.API_BASE;
 
 // ── DOM Elements ──────────────────────────────────────────────────────
+/** @type {HTMLButtonElement} */
 const scanBtn = document.getElementById("scanBtn");
+/** @type {HTMLButtonElement} */
 const clearBtn = document.getElementById("clearBtn");
+/** @type {HTMLElement} */
 const statusDot = document.getElementById("statusDot");
+/** @type {HTMLElement} */
 const statusText = document.getElementById("statusText");
+/** @type {HTMLInputElement} */
 const thresholdSlider = document.getElementById("thresholdSlider");
+/** @type {HTMLElement} */
 const thresholdValue = document.getElementById("thresholdValue");
+/** @type {HTMLElement} */
 const resultsSection = document.getElementById("resultsSection");
+/** @type {HTMLElement} */
 const loadingSection = document.getElementById("loadingSection");
+/** @type {HTMLElement} */
 const errorSection = document.getElementById("errorSection");
+/** @type {HTMLElement} */
 const errorText = document.getElementById("errorText");
+/** @type {HTMLElement} */
 const totalScanned = document.getElementById("totalScanned");
+/** @type {HTMLElement} */
 const toxicFound = document.getElementById("toxicFound");
+/** @type {HTMLElement} */
 const mediumFound = document.getElementById("mediumFound");
+/** @type {HTMLElement} */
 const safeFound = document.getElementById("safeFound");
+/** @type {HTMLElement} */
 const categoryBreakdown = document.getElementById("categoryBreakdown");
+/** @type {HTMLButtonElement} */
 const themeToggle = document.getElementById("themeToggle");
+/** @type {HTMLButtonElement} */
 const exportBtn = document.getElementById("exportBtn");
 
-// Store last scan results for export
+/**
+ * Stores the last scan results for CSV export.
+ * @type {ClassificationResult[]|null}
+ */
 let lastResults = null;
 
-// ── Theme Toggle ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Load the saved theme from chrome.storage and apply it.
+ * Defaults to "dark" if no preference is stored.
+ * @returns {Promise<void>}
+ */
 async function loadTheme() {
     try {
         const { theme } = await chrome.storage.local.get("theme");
@@ -38,6 +70,10 @@ async function loadTheme() {
     }
 }
 
+/**
+ * Apply a theme to the popup UI.
+ * @param {"dark"|"light"} theme
+ */
 function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     themeToggle.textContent = theme === "dark" ? "🌙" : "☀️";
@@ -50,7 +86,15 @@ themeToggle.addEventListener("click", async () => {
     await chrome.storage.local.set({ theme: next });
 });
 
-// ── Server Health Check ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  SERVER HEALTH CHECK
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Check if the ToxGuard server is reachable and healthy.
+ * Updates the status dot and text in the popup UI.
+ * @returns {Promise<boolean>} `true` if server is online
+ */
 async function checkServerHealth() {
     try {
         const response = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(3000) });
@@ -70,12 +114,18 @@ async function checkServerHealth() {
     return false;
 }
 
-// ── Threshold Slider ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  THRESHOLD SLIDER
+// ═══════════════════════════════════════════════════════════════════════
+
 thresholdSlider.addEventListener("input", () => {
     thresholdValue.textContent = `${thresholdSlider.value}%`;
 });
 
-// ── Scan Button ───────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  SCAN
+// ═══════════════════════════════════════════════════════════════════════
+
 scanBtn.addEventListener("click", async () => {
     const threshold = parseInt(thresholdSlider.value) / 100;
 
@@ -115,7 +165,10 @@ scanBtn.addEventListener("click", async () => {
     }
 });
 
-// ── Clear Button ──────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  CLEAR
+// ═══════════════════════════════════════════════════════════════════════
+
 clearBtn.addEventListener("click", async () => {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -128,7 +181,22 @@ clearBtn.addEventListener("click", async () => {
     }
 });
 
-// ── Display Results ───────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  RESULTS DISPLAY
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * @typedef {Object} ScanData
+ * @property {number}                totalComments  - Total comments found on page
+ * @property {number}                toxicComments  - Number of toxic comments
+ * @property {number}                [mediumComments=0] - Number of medium-severity comments
+ * @property {ClassificationResult[]} results       - Per-comment classification results
+ */
+
+/**
+ * Populate the popup results section with scan data.
+ * @param {ScanData} data - Scan results from the content script
+ */
 function displayResults(data) {
     const { totalComments, toxicComments, mediumComments = 0, results } = data;
     const safeCount = totalComments - toxicComments - mediumComments;
@@ -142,6 +210,7 @@ function displayResults(data) {
     safeFound.textContent = safeCount;
 
     // Category breakdown
+    /** @type {Record<string, number>} */
     const categories = {};
     results.forEach(r => {
         if (r.is_toxic) {
@@ -169,7 +238,10 @@ function displayResults(data) {
     clearBtn.style.display = "flex";
 }
 
-// ── Export CSV ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  CSV EXPORT
+// ═══════════════════════════════════════════════════════════════════════
+
 exportBtn.addEventListener("click", () => {
     if (!lastResults || lastResults.length === 0) return;
 
@@ -202,7 +274,14 @@ exportBtn.addEventListener("click", () => {
     URL.revokeObjectURL(url);
 });
 
-// ── Show Error ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  ERROR DISPLAY
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Show an error message in the popup, auto-hides after 5 seconds.
+ * @param {string} message - Error message to display
+ */
 function showError(message) {
     errorText.textContent = message;
     errorSection.style.display = "block";
@@ -211,6 +290,9 @@ function showError(message) {
     }, 5000);
 }
 
-// ── Init ──────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════════
+
 loadTheme();
 checkServerHealth();

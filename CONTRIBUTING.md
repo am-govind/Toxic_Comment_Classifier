@@ -33,6 +33,7 @@ All three are injected in order by `popup.js` via `chrome.scripting.executeScrip
 ## Guidelines
 
 - **No bundler** — The extension uses plain JS (no webpack, no npm). Keep it simple.
+- **JSDoc annotations** — All functions use `@param` / `@returns` / `@typedef` for IntelliSense. Add docs to any new functions.
 - **`!important` in CSS** — Required because we inject into third-party pages. Use it on all style rules.
 - **DOM selectors** — Platform-specific selectors (in `platforms.js`) may break when sites update. Test on real pages.
 - **Privacy** — Never send author/user data to the server. Author extraction stays client-side.

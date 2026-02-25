@@ -1,13 +1,25 @@
 /**
  * ToxGuard Platform Detection & Author Extraction
- * Platform-specific logic for extracting comment author IDs from YouTube, Reddit, X, etc.
+ * Platform-specific logic for extracting comment author IDs.
+ *
+ * Supported platforms:
+ * - YouTube   → channel name from `ytd-comment-renderer`
+ * - Reddit    → `u/username` from `shreddit-comment[author]`
+ * - X/Twitter → `@handle` from `[data-testid='User-Name']`
+ * - Generic   → falls back to "Unknown"
+ *
+ * @file Injected as a dependency before content.js
  */
 
 /* eslint-disable no-unused-vars */
 
 /**
- * Detect which platform the current page belongs to.
- * @returns {"youtube"|"reddit"|"x"|"generic"}
+ * @typedef {"youtube"|"reddit"|"x"|"generic"} Platform
+ */
+
+/**
+ * Detect which platform the current page belongs to based on hostname.
+ * @returns {Platform}
  */
 function detectPlatform() {
     const host = window.location.hostname;
@@ -19,9 +31,18 @@ function detectPlatform() {
 
 /**
  * Extract the author/user ID for a comment element based on platform DOM structure.
- * @param {Element} element — the comment text element
- * @param {string}  platform — result of detectPlatform()
- * @returns {string} — author name/handle or "Unknown"
+ *
+ * Each platform uses different DOM traversal strategies:
+ * - **YouTube**: Walks up to `ytd-comment-view-model` or `ytd-comment-renderer`,
+ *   then finds `#author-text`, `h3 a`, or channel links.
+ * - **Reddit**: Prioritizes `shreddit-comment[author]` attribute (new Reddit),
+ *   falls back to `.author` or `a[href*='/user/']` links (old Reddit).
+ * - **X/Twitter**: Walks up to `article`, then finds `@handle` links in
+ *   `[data-testid='User-Name']`.
+ *
+ * @param {Element}  element  - The comment text DOM element
+ * @param {Platform} platform - Result of {@link detectPlatform}
+ * @returns {string} Author name/handle (e.g. "JohnDoe", "u/username", "@handle") or "Unknown"
  */
 function extractAuthor(element, platform) {
     try {
@@ -63,6 +84,7 @@ function extractAuthor(element, platform) {
                         commentBlock.querySelector("[data-testid='comment_author_link']") ||
                         commentBlock.querySelector("a[href*='/user/']");
                     if (authorEl) {
+                        /** @type {string} */
                         let name = authorEl.textContent.trim();
                         if (!name && authorEl.href) {
                             const match = authorEl.href.match(/\/user\/([^/?#]+)/);

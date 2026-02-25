@@ -1,12 +1,20 @@
 /**
- * Options Page Script
- * Saves/loads API configuration to/from chrome.storage.local.
+ * ToxGuard Options Page Script
+ * Manages saving/loading API configuration to/from chrome.storage.local.
+ * Opened automatically on first install and accessible via extension context menu.
+ *
+ * @requires config.js — provides {@link CONFIG} with default API_BASE
  */
 
+/** @type {HTMLInputElement} */
 const apiBaseInput = document.getElementById("apiBase");
+/** @type {HTMLInputElement} */
 const apiKeyInput = document.getElementById("apiKey");
+/** @type {HTMLButtonElement} */
 const resetBtn = document.getElementById("resetBtn");
+/** @type {HTMLButtonElement} */
 const toggleKey = document.getElementById("toggleKey");
+/** @type {HTMLElement} */
 const statusMsg = document.getElementById("statusMsg");
 
 // ── Load saved settings ─────────────────────────────────────────────
@@ -54,7 +62,12 @@ toggleKey.addEventListener("click", () => {
     toggleKey.textContent = isPassword ? "🙈" : "👁️";
 });
 
-// ── Status message ──────────────────────────────────────────────────
+/**
+ * Display a temporary status message below the form.
+ *
+ * @param {string} message - Message text to display
+ * @param {"success"|"error"} type - Visual style variant
+ */
 function showStatus(message, type) {
     statusMsg.textContent = message;
     statusMsg.className = `status-msg ${type}`;
