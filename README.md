@@ -158,7 +158,6 @@ Classify an array of comments.
 **Headers:**
 | Header | Required | Description |
 |--------|----------|-------------|
-| `X-API-Key` | Yes (prod) | API authentication key |
 | `Content-Type` | Yes | `application/json` |
 
 **Request Body:**
@@ -201,7 +200,6 @@ Classify an array of comments.
 ```bash
 curl -X POST https://amgovind-toxguard.hf.space/predict \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: your-api-key" \
   -d '{"comments": ["Hello!", "You are terrible!"], "threshold": 0.5}'
 ```
 
@@ -214,7 +212,6 @@ curl -X POST https://amgovind-toxguard.hf.space/predict \
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `4000` | Server port |
-| `API_KEY` | `toxguard-dev-key-change-me` | API authentication key |
 | `CORS_ORIGINS` | `["*"]` | Allowed CORS origins |
 | `RATE_LIMIT` | `30/minute` | Request rate limit |
 | `MAX_COMMENT_LENGTH` | `500` | Max characters per comment |
@@ -224,7 +221,6 @@ curl -X POST https://amgovind-toxguard.hf.space/predict \
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `API_BASE` | `https://amgovind-toxguard.hf.space` | Backend URL |
-| `API_KEY` | *(empty)* | Can also be set via Options page |
 | `DEFAULT_THRESHOLD` | `0.5` | Default toxicity threshold |
 
 ---

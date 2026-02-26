@@ -51,40 +51,6 @@ class TestSecurityHeaders:
         assert response.headers.get("X-Request-ID") is not None
 
 
-# ═══════════════════════════════════════════════════════════════════════
-# API Key Authentication
-# ═══════════════════════════════════════════════════════════════════════
-class TestApiKeyAuth:
-
-    def test_dev_mode_allows_no_key(self, client, settings):
-        """In dev mode (default key), requests without X-API-Key should pass."""
-        if settings.API_KEY != "toxguard-dev-key-change-me":
-            pytest.skip("Not in dev mode")
-        response = client.post(
-            "/predict",
-            json={
-                "comments": ["Hello"],
-                "threshold": 0.5,
-            },
-        )
-        assert response.status_code == 200
-
-    def test_dev_mode_allows_any_key(self, client, settings):
-        """In dev mode, any X-API-Key value should work."""
-        if settings.API_KEY != "toxguard-dev-key-change-me":
-            pytest.skip("Not in dev mode")
-        response = client.post(
-            "/predict",
-            json={"comments": ["Hello"], "threshold": 0.5},
-            headers={"X-API-Key": "random-key-123"},
-        )
-        assert response.status_code == 200
-
-    def test_health_no_auth_required(self, client):
-        """Health endpoint should never require auth."""
-        response = client.get("/health")
-        assert response.status_code == 200
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # Input Sanitization
