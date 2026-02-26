@@ -20,7 +20,6 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Security
-    API_KEY: str = "toxguard-dev-key-change-me"
     CORS_ORIGINS: list[str] = ["chrome-extension://*"]
     ALLOWED_HOSTS: list[str] = ["*"]
     RATE_LIMIT: str = "30/minute"

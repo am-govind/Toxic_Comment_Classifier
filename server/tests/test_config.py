@@ -19,9 +19,6 @@ class TestSettings:
         s = Settings()
         assert s.HOST == "0.0.0.0"
 
-    def test_default_api_key(self):
-        s = Settings()
-        assert s.API_KEY == "toxguard-dev-key-change-me"
 
     def test_default_rate_limit(self):
         s = Settings()
