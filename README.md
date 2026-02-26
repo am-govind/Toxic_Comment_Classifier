@@ -42,7 +42,7 @@ A **Chrome extension + FastAPI backend** that scans web pages for toxic comments
 graph LR
     A[🌐 Web Page] -->|Comment Text| B[Content Script]
     B -->|chrome.runtime| C[Background Script]
-    C -->|HTTPS + API Key| D[FastAPI Server]
+    C -->|HTTPS| D[FastAPI Server]
     D -->|TF/Keras Model| E[Classifier]
     E -->|Scores & Severity| D
     D -->|JSON Results| C
@@ -68,7 +68,7 @@ Toxic_Comment_Classifier/
 │   ├── content.js                # Orchestrator — scan, highlight, modal
 │   ├── content-styles.js         # All injected CSS (highlights, modal, badge)
 │   ├── platforms.js              # Platform detection & author extraction
-│   ├── config.js                 # API base URL, key, defaults
+│   ├── config.js                 # API base URL, defaults
 │   ├── popup.html / .js / .css   # Extension popup UI
 │   ├── options.html / .js / .css # Settings page
 │   ├── jsconfig.json             # VS Code IntelliSense & type checking
@@ -79,7 +79,7 @@ Toxic_Comment_Classifier/
 │   │   ├── main.py               # API endpoints (/health, /predict)
 │   │   ├── classifier.py         # TF/Keras model + 3-tier prediction
 │   │   ├── config.py             # Environment configuration
-│   │   └── middleware.py         # API key auth + rate limiting
+│   │   └── middleware.py         # Rate limiting + security headers
 │   ├── models/                   # ML model files (tox_model.h5, tokenizer.pickle)
 │   ├── tests/                    # pytest suite for API
 │   ├── Dockerfile                # Container support
@@ -102,11 +102,28 @@ Toxic_Comment_Classifier/
 
 ## 🚀 Quick Start
 
-### 1. Start the Backend Server
+The extension is pre-configured to use the **hosted server on Hugging Face** — no backend setup required.
+
+### 1. Load the Chrome Extension
 
 ```bash
-# Clone & set up
 git clone https://github.com/am-govind/Toxic_Comment_Classifier.git
+```
+
+1. Open `chrome://extensions/` in any Chromium browser
+2. Enable **Developer mode** (top right toggle)
+3. Click **Load unpacked** → select the `extension/` folder
+4. Visit any page with comments → click the 🛡️ ToxGuard icon → **Scan Page**
+
+**That's it!** The extension connects to `https://amgovind-toxguard.hf.space` automatically.
+
+> **Note:** The hosted server runs on HuggingFace's free tier. It may take 30–60 seconds to wake from sleep on the first request after a period of inactivity.
+
+### 2. (Optional) Run the Server Locally
+
+If you want to self-host the backend for faster response times or development:
+
+```bash
 cd Toxic_Comment_Classifier/server
 
 # Create virtual environment
@@ -115,21 +132,14 @@ python -m venv tcc && source tcc/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure (edit .env for production)
+# Configure
 cp .env.example .env
 
 # Run
 python -m app.main
 ```
 
-The API will be running at `http://localhost:4000`.
-
-### 2. Load the Chrome Extension
-
-1. Open `chrome://extensions/` in any Chromium browser
-2. Enable **Developer mode** (top right toggle)
-3. Click **Load unpacked** → select the `extension/` folder
-4. Click the 🛡️ ToxGuard icon on any page → **Scan Page**
+The API will be running at `http://localhost:4000`. To use it with the extension, go to the ToxGuard extension **Options page** (right-click icon → Options) and change the API URL to `http://localhost:4000`.
 
 ### 3. (Optional) Streamlit Demo
 
